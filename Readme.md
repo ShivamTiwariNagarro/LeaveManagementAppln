@@ -10,7 +10,7 @@ A complete Leave Management System built with .NET Core 8 microservices architec
 |---|------|------|
 | 1 | Microservices Design Document | [docs/DESIGN_DOCUMENT.md](docs/DESIGN_DOCUMENT.md) |
 | 2 | API Endpoint Documentation | [docs/API_DOCUMENTATION.md](docs/API_DOCUMENTATION.md) |
-| 3 | Source Code | [GitHub Repository](TODO) |
+| 3 | Source Code | [GitHub Repository](https://github.com/ShivamTiwariNagarro/LeaveManagementAppln) |
 | 4 | Inter-Service Communication Writeup | [docs/INTER_SERVICE_COMMUNICATION.md](docs/INTER_SERVICE_COMMUNICATION.md) |
 | 5 | Dockerfile for each microservice | [src/Services/*/Dockerfile](src/) |
 | 6 | Docker Hub Image Paths | Docker Hub blocked by IT team; using local build context in docker-compose.yml instead |
@@ -45,7 +45,7 @@ For detailed architecture diagram, design decisions, and service responsibilitie
 
 ```bash
 cd src
-docker-compose up --build
+docker-compose down -v ; docker-compose up --build -d
 ```
 
 This single command starts **all 7 containers**:
@@ -334,18 +334,15 @@ docker-compose restart notification-service leave-service
 
 ## Demo Video
 
-> **Video Recording Link**: [TODO: Add link after recording]
+> **Video Recording Link**: [Recording](https://nagarro-my.sharepoint.com/:v:/r/personal/shivam_tiwari_nagarro_com/Documents/ShivamTiwari_3163312_MicroserviceAssignment2026/ShivamTiwariMicroserviceAssignment.mp4?csf=1&web=1&e=GjWI7N)
 >
-> Duration: 5-10 minutes covering:
+> Duration: 10 minutes covering:
 > - End-to-end success scenario (apply -> approve -> notification)
 > - Failure scenarios (invalid login, overlapping dates, unauthorized access)
 > - Cross-cutting concerns (logging, health checks, circuit breaker)
 
 ---
 
-## License
-
-This project is for educational purposes - Microservices Assignment 2026.
 
 
 
