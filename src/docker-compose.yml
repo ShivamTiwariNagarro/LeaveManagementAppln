@@ -1,0 +1,176 @@
+version: '3.8'
+
+services:
+  # ========== INFRASTRUCTURE ==========
+  
+  # Consul - Service Discovery & Health Checking
+  consul:
+    image: consul:1.15
+    container_name: consul
+    ports:
+      - "8500:8500"   # Web UI & HTTP API
+      - "8600:8600/udp"  # DNS
+    command: agent -server -ui -node=consul-server -bootstrap-expect=1 -client=0.0.0.0
+    healthcheck:
+      test: ["CMD", "consul", "members"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - leave-network
+
+  # RabbitMQ - Message Broker for async communication
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - leave-network
+
+  # ========== MICROSERVICES ==========
+
+  auth-service:
+    build:
+      context: .
+      dockerfile: Services/AuthService/Dockerfile
+    container_name: auth-service
+    ports:
+      - "5001:5001"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Docker
+      - Consul__Host=consul
+      - Consul__Port=8500
+      - Consul__Discovery__Enabled=true
+      - Consul__Discovery__Register=true
+      - Consul__Discovery__ServiceName=auth-service
+      - Consul__Discovery__InstanceId=auth-service-001
+      - Consul__Discovery__HostName=auth-service
+      - Consul__Discovery__Port=5001
+      - Consul__Discovery__Deregister=true
+      - Consul__Discovery__DeregisterCriticalServiceAfter=30s
+    depends_on:
+      consul:
+        condition: service_healthy
+    networks:
+      - leave-network
+
+  employee-service:
+    build:
+      context: .
+      dockerfile: Services/EmployeeService/Dockerfile
+    container_name: employee-service
+    ports:
+      - "5002:5002"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Docker
+      - Consul__Host=consul
+      - Consul__Port=8500
+      - Consul__Discovery__Enabled=true
+      - Consul__Discovery__Register=true
+      - Consul__Discovery__ServiceName=employee-service
+      - Consul__Discovery__InstanceId=employee-service-001
+      - Consul__Discovery__HostName=employee-service
+      - Consul__Discovery__Port=5002
+      - Consul__Discovery__Deregister=true
+      - Consul__Discovery__DeregisterCriticalServiceAfter=30s
+    depends_on:
+      consul:
+        condition: service_healthy
+    networks:
+      - leave-network
+
+  leave-service:
+    build:
+      context: .
+      dockerfile: Services/LeaveService/Dockerfile
+    container_name: leave-service
+    ports:
+      - "5003:5003"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Docker
+      - Consul__Host=consul
+      - Consul__Port=8500
+      - Consul__Discovery__Enabled=true
+      - Consul__Discovery__Register=true
+      - Consul__Discovery__ServiceName=leave-service
+      - Consul__Discovery__InstanceId=leave-service-001
+      - Consul__Discovery__HostName=leave-service
+      - Consul__Discovery__Port=5003
+      - Consul__Discovery__Deregister=true
+      - Consul__Discovery__DeregisterCriticalServiceAfter=30s
+      - RabbitMQ__HostName=rabbitmq
+      - ServiceUrls__EmployeeService=http://employee-service:5002
+    depends_on:
+      consul:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - leave-network
+
+  notification-service:
+    build:
+      context: .
+      dockerfile: Services/NotificationService/Dockerfile
+    container_name: notification-service
+    ports:
+      - "5004:5004"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Docker
+      - Consul__Host=consul
+      - Consul__Port=8500
+      - Consul__Discovery__Enabled=true
+      - Consul__Discovery__Register=true
+      - Consul__Discovery__ServiceName=notification-service
+      - Consul__Discovery__InstanceId=notification-service-001
+      - Consul__Discovery__HostName=notification-service
+      - Consul__Discovery__Port=5004
+      - Consul__Discovery__Deregister=true
+      - Consul__Discovery__DeregisterCriticalServiceAfter=30s
+      - RabbitMQ__HostName=rabbitmq
+    depends_on:
+      consul:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - leave-network
+
+  # ========== API GATEWAY ==========
+
+  api-gateway:
+    build:
+      context: .
+      dockerfile: Gateway/ApiGateway/Dockerfile
+    container_name: api-gateway
+    ports:
+      - "5000:5000"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Docker
+      - Consul__Host=consul
+      - Consul__Port=8500
+    depends_on:
+      consul:
+        condition: service_healthy
+      auth-service:
+        condition: service_started
+      employee-service:
+        condition: service_started
+      leave-service:
+        condition: service_started
+    networks:
+      - leave-network
+
+networks:
+  leave-network:
+    driver: bridge

@@ -1,0 +1,235 @@
+{
+  "Routes": [
+    {
+      "RouteId": "auth-login",
+      "DownstreamPathTemplate": "/api/auth/login",
+      "DownstreamScheme": "http",
+      "UpstreamPathTemplate": "/api/auth/login",
+      "UpstreamHttpMethod": [ "POST" ],
+      "ServiceName": "auth-service",
+      "LoadBalancerOptions": {
+        "Type": "RoundRobin"
+      }
+    },
+    {
+      "RouteId": "auth-validate",
+      "DownstreamPathTemplate": "/api/auth/validate",
+      "DownstreamScheme": "http",
+      "UpstreamPathTemplate": "/api/auth/validate",
+      "UpstreamHttpMethod": [ "GET" ],
+      "ServiceName": "auth-service",
+      "LoadBalancerOptions": {
+        "Type": "RoundRobin"
+      },
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer"
+      }
+    },
+    {
+      "RouteId": "employees-me",
+      "DownstreamPathTemplate": "/api/employees/me",
+      "DownstreamScheme": "http",
+      "UpstreamPathTemplate": "/api/employees/me",
+      "UpstreamHttpMethod": [ "GET" ],
+      "ServiceName": "employee-service",
+      "LoadBalancerOptions": {
+        "Type": "RoundRobin"
+      },
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer"
+      }
+    },
+    {
+      "RouteId": "employees-me-balance",
+      "DownstreamPathTemplate": "/api/employees/me/balance",
+      "DownstreamScheme": "http",
+      "UpstreamPathTemplate": "/api/employees/me/balance",
+      "UpstreamHttpMethod": [ "GET" ],
+      "ServiceName": "employee-service",
+      "LoadBalancerOptions": {
+        "Type": "RoundRobin"
+      },
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer"
+      }
+    },
+    {
+      "RouteId": "employees-all",
+      "DownstreamPathTemplate": "/api/employees",
+      "DownstreamScheme": "http",
+      "UpstreamPathTemplate": "/api/employees",
+      "UpstreamHttpMethod": [ "GET" ],
+      "ServiceName": "employee-service",
+      "LoadBalancerOptions": {
+        "Type": "RoundRobin"
+      },
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer"
+      },
+      "RouteClaimsRequirement": {
+        "user_role": "Manager"
+      }
+    },
+    {
+      "RouteId": "employees-service",
+      "DownstreamPathTemplate": "/api/employees/{everything}",
+      "DownstreamScheme": "http",
+      "UpstreamPathTemplate": "/api/employees/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ],
+      "ServiceName": "employee-service",
+      "LoadBalancerOptions": {
+        "Type": "RoundRobin"
+      },
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer"
+      }
+    },
+    {
+      "RouteId": "leaves-pending",
+      "DownstreamPathTemplate": "/api/leaves/pending",
+      "DownstreamScheme": "http",
+      "UpstreamPathTemplate": "/api/leaves/pending",
+      "UpstreamHttpMethod": [ "GET" ],
+      "ServiceName": "leave-service",
+      "LoadBalancerOptions": {
+        "Type": "RoundRobin"
+      },
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer"
+      },
+      "RouteClaimsRequirement": {
+        "user_role": "Manager"
+      }
+    },
+    {
+      "RouteId": "leaves-my",
+      "DownstreamPathTemplate": "/api/leaves/my",
+      "DownstreamScheme": "http",
+      "UpstreamPathTemplate": "/api/leaves/my",
+      "UpstreamHttpMethod": [ "GET" ],
+      "ServiceName": "leave-service",
+      "LoadBalancerOptions": {
+        "Type": "RoundRobin"
+      },
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer"
+      }
+    },
+    {
+      "RouteId": "leaves-team",
+      "DownstreamPathTemplate": "/api/leaves/team",
+      "DownstreamScheme": "http",
+      "UpstreamPathTemplate": "/api/leaves/team",
+      "UpstreamHttpMethod": [ "GET" ],
+      "ServiceName": "leave-service",
+      "LoadBalancerOptions": {
+        "Type": "RoundRobin"
+      },
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer"
+      },
+      "RouteClaimsRequirement": {
+        "user_role": "Manager"
+      }
+    },
+    {
+      "RouteId": "leaves-approve",
+      "DownstreamPathTemplate": "/api/leaves/{id}/approve",
+      "DownstreamScheme": "http",
+      "UpstreamPathTemplate": "/api/leaves/{id}/approve",
+      "UpstreamHttpMethod": [ "POST" ],
+      "ServiceName": "leave-service",
+      "LoadBalancerOptions": {
+        "Type": "RoundRobin"
+      },
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer"
+      },
+      "RouteClaimsRequirement": {
+        "user_role": "Manager"
+      }
+    },
+    {
+      "RouteId": "leaves-reject",
+      "DownstreamPathTemplate": "/api/leaves/{id}/reject",
+      "DownstreamScheme": "http",
+      "UpstreamPathTemplate": "/api/leaves/{id}/reject",
+      "UpstreamHttpMethod": [ "POST" ],
+      "ServiceName": "leave-service",
+      "LoadBalancerOptions": {
+        "Type": "RoundRobin"
+      },
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer"
+      },
+      "RouteClaimsRequirement": {
+        "user_role": "Manager"
+      }
+    },
+    {
+      "RouteId": "leaves-base",
+      "DownstreamPathTemplate": "/api/leaves",
+      "DownstreamScheme": "http",
+      "UpstreamPathTemplate": "/api/leaves",
+      "UpstreamHttpMethod": [ "GET", "POST" ],
+      "ServiceName": "leave-service",
+      "LoadBalancerOptions": {
+        "Type": "RoundRobin"
+      },
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer"
+      }
+    },
+    {
+      "RouteId": "leaves-service",
+      "DownstreamPathTemplate": "/api/leaves/{everything}",
+      "DownstreamScheme": "http",
+      "UpstreamPathTemplate": "/api/leaves/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ],
+      "ServiceName": "leave-service",
+      "LoadBalancerOptions": {
+        "Type": "RoundRobin"
+      },
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer"
+      }
+    },
+    {
+      "RouteId": "notifications-base",
+      "DownstreamPathTemplate": "/api/notifications",
+      "DownstreamScheme": "http",
+      "UpstreamPathTemplate": "/api/notifications",
+      "UpstreamHttpMethod": [ "GET" ],
+      "ServiceName": "notification-service",
+      "LoadBalancerOptions": {
+        "Type": "RoundRobin"
+      },
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer"
+      }
+    },
+    {
+      "RouteId": "notifications-service",
+      "DownstreamPathTemplate": "/api/notifications/{everything}",
+      "DownstreamScheme": "http",
+      "UpstreamPathTemplate": "/api/notifications/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST" ],
+      "ServiceName": "notification-service",
+      "LoadBalancerOptions": {
+        "Type": "RoundRobin"
+      },
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer"
+      }
+    }
+  ],
+  "GlobalConfiguration": {
+    "BaseUrl": "http://api-gateway:5000",
+    "ServiceDiscoveryProvider": {
+      "Scheme": "http",
+      "Host": "consul",
+      "Port": 8500,
+      "Type": "Consul"
+    }
+  }
+}

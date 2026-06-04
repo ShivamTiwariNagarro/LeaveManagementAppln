@@ -1,0 +1,1504 @@
+{
+  "info": {
+    "name": "Leave Management System - Complete API Collection",
+    "description": "Microservices Leave Management System - All API Endpoints with End-to-End Flows\n\nBase URL: http://localhost:5000 (via API Gateway)\n\nPre-seeded Users:\n- employee1/password123 (Employee, reports to manager1)\n- employee2/password123 (Employee, reports to manager1)\n- manager1/password123 (Manager)\n- manager2/password123 (Manager)\n\nRun 'End-to-End Flows' folder in order for complete workflow testing.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000",
+      "type": "string"
+    },
+    {
+      "key": "authToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "managerToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "leaveId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "notificationId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Authentication",
+      "description": "Login and token validation endpoints",
+      "item": [
+        {
+          "name": "1.1 Login as Employee",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.success && jsonData.data && jsonData.data.token) {",
+                  "    pm.collectionVariables.set('authToken', jsonData.data.token);",
+                  "}",
+                  "",
+                  "pm.test('Login successful', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "    pm.expect(jsonData.data.token).to.be.a('string');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"employee1\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            },
+            "description": "Login as employee1. Token auto-saved to authToken variable."
+          },
+          "response": []
+        },
+        {
+          "name": "1.2 Login as Manager",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.success && jsonData.data && jsonData.data.token) {",
+                  "    pm.collectionVariables.set('managerToken', jsonData.data.token);",
+                  "}",
+                  "",
+                  "pm.test('Manager login successful', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"manager1\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            },
+            "description": "Login as manager1. Token auto-saved to managerToken variable."
+          },
+          "response": []
+        },
+        {
+          "name": "1.3 Login - Invalid Credentials (Failure)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Login fails with 401', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.false;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"employee1\",\n  \"password\": \"wrongpassword\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            },
+            "description": "Test login failure with wrong password"
+          },
+          "response": []
+        },
+        {
+          "name": "1.4 Validate Token",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/validate",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "validate"]
+            },
+            "description": "Validate JWT token and get user info"
+          },
+          "response": []
+        },
+        {
+          "name": "1.5 Access Without Token (Failure)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Unauthorized without token', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/employees/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "employees", "me"]
+            },
+            "description": "Test accessing protected endpoint without token - should return 401"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "2. Employee & Balance",
+      "description": "Employee profile and leave balance endpoints",
+      "item": [
+        {
+          "name": "2.1 Get My Profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/employees/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "employees", "me"]
+            },
+            "description": "Get current user's employee profile"
+          },
+          "response": []
+        },
+        {
+          "name": "2.2 Get My Leave Balance",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/employees/me/balance",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "employees", "me", "balance"]
+            },
+            "description": "Get all leave balances for current user"
+          },
+          "response": []
+        },
+        {
+          "name": "2.3 Get Balance (filter by year)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/employees/me/balance?year=2026",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "employees", "me", "balance"],
+              "query": [
+                { "key": "year", "value": "2026" }
+              ]
+            },
+            "description": "Filter balance by year"
+          },
+          "response": []
+        },
+        {
+          "name": "2.4 Get Balance (filter by leaveType)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/employees/me/balance?leaveType=Casual",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "employees", "me", "balance"],
+              "query": [
+                { "key": "leaveType", "value": "Casual" }
+              ]
+            },
+            "description": "Filter balance by leave type (Casual, Sick, Privilege)"
+          },
+          "response": []
+        },
+        {
+          "name": "2.5 Get All Employees (Manager Only)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{managerToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/employees",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "employees"]
+            },
+            "description": "Get all employees (Manager role required)"
+          },
+          "response": []
+        },
+        {
+          "name": "2.6 Get Employee by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{managerToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/employees/EMP001",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "employees", "EMP001"]
+            },
+            "description": "Get specific employee by ID"
+          },
+          "response": []
+        },
+        {
+          "name": "2.7 Get Employees by Manager",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{managerToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/employees/manager/MGR001",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "employees", "manager", "MGR001"]
+            },
+            "description": "Get all employees under a specific manager (Manager only)"
+          },
+          "response": []
+        },
+        {
+          "name": "2.8 Get Employee Balance",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{managerToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/employees/EMP001/balance",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "employees", "EMP001", "balance"]
+            },
+            "description": "Get specific employee's leave balance"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "3. Leave Requests - Employee",
+      "description": "Leave operations for employees",
+      "item": [
+        {
+          "name": "3.1 Apply for Leave (Casual)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.success && jsonData.data && jsonData.data.id) {",
+                  "    pm.collectionVariables.set('leaveId', jsonData.data.id);",
+                  "}",
+                  "",
+                  "pm.test('Leave applied successfully', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "    pm.expect(jsonData.data.status).to.equal('Pending');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"leaveType\": \"Casual\",\n  \"startDate\": \"2026-06-15\",\n  \"endDate\": \"2026-06-16\",\n  \"reason\": \"Personal work to attend\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/leaves",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "leaves"]
+            },
+            "description": "Apply for leave. Types: Casual, Sick, Privilege. Leave ID auto-saved."
+          },
+          "response": []
+        },
+        {
+          "name": "3.2 Apply for Leave (Sick)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.success && jsonData.data && jsonData.data.id) {",
+                  "    pm.collectionVariables.set('leaveId', jsonData.data.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"leaveType\": \"Sick\",\n  \"startDate\": \"2026-06-22\",\n  \"endDate\": \"2026-06-23\",\n  \"reason\": \"Not feeling well, need rest\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/leaves",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "leaves"]
+            },
+            "description": "Apply for sick leave"
+          },
+          "response": []
+        },
+        {
+          "name": "3.3 Apply Leave - Overlapping Dates (Failure)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Overlap detected - returns 400/409', function () {",
+                  "    var status = pm.response.code;",
+                  "    pm.expect([400, 409]).to.include(status);",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.false;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"leaveType\": \"Casual\",\n  \"startDate\": \"2026-06-15\",\n  \"endDate\": \"2026-06-16\",\n  \"reason\": \"Duplicate dates - should fail\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/leaves",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "leaves"]
+            },
+            "description": "Test applying leave with overlapping dates - should fail"
+          },
+          "response": []
+        },
+        {
+          "name": "3.4 Apply Leave - Invalid Dates (Failure)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Validation error - returns 400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"leaveType\": \"Casual\",\n  \"startDate\": \"2026-06-23\",\n  \"endDate\": \"2026-06-18\",\n  \"reason\": \"End date before start date - should fail\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/leaves",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "leaves"]
+            },
+            "description": "Test validation: end date before start date"
+          },
+          "response": []
+        },
+        {
+          "name": "3.5 Apply Leave - Past Date (Failure)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Past date validation - returns 400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"leaveType\": \"Casual\",\n  \"startDate\": \"2025-01-01\",\n  \"endDate\": \"2025-01-02\",\n  \"reason\": \"Past dates - should fail\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/leaves",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "leaves"]
+            },
+            "description": "Test validation: cannot apply for past dates"
+          },
+          "response": []
+        },
+        {
+          "name": "3.6 Get My Leave Requests",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/leaves/my",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "leaves", "my"]
+            },
+            "description": "Get all leave requests for current user"
+          },
+          "response": []
+        },
+        {
+          "name": "3.7 Get My Leaves (with pagination)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/leaves/my?page=1&pageSize=5",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "leaves", "my"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "pageSize", "value": "5" }
+              ]
+            },
+            "description": "Get leave requests with pagination"
+          },
+          "response": []
+        },
+        {
+          "name": "3.8 Get Leave by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/leaves/{{leaveId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "leaves", "{{leaveId}}"]
+            },
+            "description": "Get specific leave request details"
+          },
+          "response": []
+        },
+        {
+          "name": "3.9 Cancel Leave Request",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Leave cancelled', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/leaves/{{leaveId}}/cancel",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "leaves", "{{leaveId}}", "cancel"]
+            },
+            "description": "Cancel own pending leave request"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "4. Leave Requests - Manager",
+      "description": "Manager approval/rejection endpoints",
+      "item": [
+        {
+          "name": "4.1 Get Pending Requests",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{managerToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/leaves/pending",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "leaves", "pending"]
+            },
+            "description": "Get all pending leave requests from team (Manager only)"
+          },
+          "response": []
+        },
+        {
+          "name": "4.2 Get Team Leave History",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{managerToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/leaves/team",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "leaves", "team"]
+            },
+            "description": "Get all leave requests from team members"
+          },
+          "response": []
+        },
+        {
+          "name": "4.3 Get Team Leaves (filter by status)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{managerToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/leaves/team?status=Approved",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "leaves", "team"],
+              "query": [
+                { "key": "status", "value": "Approved" }
+              ]
+            },
+            "description": "Filter team leaves by status"
+          },
+          "response": []
+        },
+        {
+          "name": "4.4 Get Team Leaves (filter by employee)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{managerToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/leaves/team?employeeId=EMP001",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "leaves", "team"],
+              "query": [
+                { "key": "employeeId", "value": "EMP001" }
+              ]
+            },
+            "description": "Filter team leaves by employee ID"
+          },
+          "response": []
+        },
+        {
+          "name": "4.5 Get Team Leaves (filter by date range)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{managerToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/leaves/team?startDate=2026-06-01&endDate=2026-06-30",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "leaves", "team"],
+              "query": [
+                { "key": "startDate", "value": "2026-06-01" },
+                { "key": "endDate", "value": "2026-06-30" }
+              ]
+            },
+            "description": "Filter team leaves by date range"
+          },
+          "response": []
+        },
+        {
+          "name": "4.6 Approve Leave Request",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Leave approved', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "    pm.expect(jsonData.data.status).to.equal('Approved');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{managerToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"comments\": \"Approved. Enjoy your leave!\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/leaves/{{leaveId}}/approve",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "leaves", "{{leaveId}}", "approve"]
+            },
+            "description": "Approve a pending leave request (deducts balance, sends notification)"
+          },
+          "response": []
+        },
+        {
+          "name": "4.7 Reject Leave Request",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Leave rejected', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "    pm.expect(jsonData.data.status).to.equal('Rejected');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{managerToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"comments\": \"Sorry, team is short-staffed that week. Please reschedule.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/leaves/{{leaveId}}/reject",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "leaves", "{{leaveId}}", "reject"]
+            },
+            "description": "Reject a pending leave request (releases balance, sends notification)"
+          },
+          "response": []
+        },
+        {
+          "name": "4.8 Employee Tries to Approve (Failure)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Forbidden for employee role', function () {",
+                  "    pm.response.to.have.status(403);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"comments\": \"Trying to approve as employee\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/leaves/{{leaveId}}/approve",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "leaves", "{{leaveId}}", "approve"]
+            },
+            "description": "Test: Employee cannot approve leaves - should return 403 Forbidden"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "5. Notifications",
+      "description": "Notification endpoints",
+      "item": [
+        {
+          "name": "5.1 Get My Notifications",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.success && jsonData.data && jsonData.data.length > 0) {",
+                  "    pm.collectionVariables.set('notificationId', jsonData.data[0].id);",
+                  "}",
+                  "",
+                  "pm.test('Notifications retrieved', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/notifications",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "notifications"]
+            },
+            "description": "Get all notifications for current user. First notification ID auto-saved."
+          },
+          "response": []
+        },
+        {
+          "name": "5.2 Get Unread Notifications",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/notifications/unread",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "notifications", "unread"]
+            },
+            "description": "Get only unread notifications"
+          },
+          "response": []
+        },
+        {
+          "name": "5.3 Get Notification by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/notifications/{{notificationId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "notifications", "{{notificationId}}"]
+            },
+            "description": "Get specific notification details"
+          },
+          "response": []
+        },
+        {
+          "name": "5.4 Mark Notification as Read",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/notifications/{{notificationId}}/read",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "notifications", "{{notificationId}}", "read"]
+            },
+            "description": "Mark a specific notification as read"
+          },
+          "response": []
+        },
+        {
+          "name": "5.5 Mark All as Read",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/notifications/read-all",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "notifications", "read-all"]
+            },
+            "description": "Mark all notifications as read for current user"
+          },
+          "response": []
+        },
+        {
+          "name": "5.6 Get Manager Notifications",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{managerToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/notifications",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "notifications"]
+            },
+            "description": "Get notifications for manager (leave applied notifications)"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "6. Health Checks",
+      "description": "Health check endpoints for all services",
+      "item": [
+        {
+          "name": "6.1 Gateway Health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5000/health",
+              "host": ["http://localhost:5000"],
+              "path": ["health"]
+            },
+            "description": "API Gateway health check"
+          },
+          "response": []
+        },
+        {
+          "name": "6.2 Auth Service Health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5001/health",
+              "host": ["http://localhost:5001"],
+              "path": ["health"]
+            },
+            "description": "Auth Service health check"
+          },
+          "response": []
+        },
+        {
+          "name": "6.3 Employee Service Health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5002/health",
+              "host": ["http://localhost:5002"],
+              "path": ["health"]
+            },
+            "description": "Employee Service health check"
+          },
+          "response": []
+        },
+        {
+          "name": "6.4 Leave Service Health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5003/health",
+              "host": ["http://localhost:5003"],
+              "path": ["health"]
+            },
+            "description": "Leave Service health check"
+          },
+          "response": []
+        },
+        {
+          "name": "6.5 Notification Service Health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5004/health",
+              "host": ["http://localhost:5004"],
+              "path": ["health"]
+            },
+            "description": "Notification Service health check"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "7. End-to-End Flow: Success Scenario",
+      "description": "Complete happy path - Run these requests IN ORDER.\n\n1. Employee logs in\n2. Checks balance\n3. Applies for leave\n4. Manager logs in\n5. Views pending requests\n6. Approves leave\n7. Employee checks notifications\n8. Employee verifies updated balance",
+      "item": [
+        {
+          "name": "E2E-1: Employee Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "pm.collectionVariables.set('authToken', jsonData.data.token);",
+                  "pm.test('Employee logged in', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"employee1\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "E2E-2: Check Initial Balance",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Balance retrieved', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    console.log('Initial balance:', pm.response.text());",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/employees/me/balance",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "employees", "me", "balance"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "E2E-3: Apply for Leave",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "pm.collectionVariables.set('leaveId', jsonData.data.id);",
+                  "pm.test('Leave applied - status Pending', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "    pm.expect(jsonData.data.status).to.equal('Pending');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"leaveType\": \"Casual\",\n  \"startDate\": \"2026-07-13\",\n  \"endDate\": \"2026-07-14\",\n  \"reason\": \"Family function to attend\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/leaves",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "leaves"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "E2E-4: Manager Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "pm.collectionVariables.set('managerToken', jsonData.data.token);",
+                  "pm.test('Manager logged in', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"manager1\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "E2E-5: Manager Checks Notifications (Leave Applied)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Manager received leave-applied notification', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.data.length).to.be.greaterThan(0);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{managerToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/notifications",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "notifications"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "E2E-6: View Pending Requests",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Pending requests found', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.data.length).to.be.greaterThan(0);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{managerToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/leaves/pending",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "leaves", "pending"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "E2E-7: Approve Leave",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Leave approved successfully', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.data.status).to.equal('Approved');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{managerToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"comments\": \"Approved! Have a great time.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/leaves/{{leaveId}}/approve",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "leaves", "{{leaveId}}", "approve"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "E2E-8: Employee Checks Notification (Approved)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Employee received approval notification', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.data.length).to.be.greaterThan(0);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/notifications",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "notifications"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "E2E-9: Verify Updated Balance",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Balance deducted after approval', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    console.log('Updated balance:', pm.response.text());",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/employees/me/balance?leaveType=Casual",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "employees", "me", "balance"],
+              "query": [
+                { "key": "leaveType", "value": "Casual" }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "8. End-to-End Flow: Rejection Scenario",
+      "description": "Complete rejection flow - Run IN ORDER.\n\n1. Employee applies for leave\n2. Manager rejects it\n3. Employee gets rejection notification\n4. Balance is restored",
+      "item": [
+        {
+          "name": "Reject-1: Employee Applies Leave",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "pm.collectionVariables.set('leaveId', jsonData.data.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"leaveType\": \"Privilege\",\n  \"startDate\": \"2026-08-03\",\n  \"endDate\": \"2026-08-07\",\n  \"reason\": \"Vacation trip planned\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/leaves",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "leaves"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Reject-2: Manager Rejects Leave",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Leave rejected', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.data.status).to.equal('Rejected');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{managerToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"comments\": \"Critical project deadline that week. Please choose different dates.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/leaves/{{leaveId}}/reject",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "leaves", "{{leaveId}}", "reject"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Reject-3: Employee Checks Rejection Notification",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/notifications",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "notifications"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Reject-4: Verify Balance Restored",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/employees/me/balance?leaveType=Privilege",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "employees", "me", "balance"],
+              "query": [
+                { "key": "leaveType", "value": "Privilege" }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "9. End-to-End Flow: Cancellation Scenario",
+      "description": "Employee cancels their own pending leave",
+      "item": [
+        {
+          "name": "Cancel-1: Apply Leave",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "pm.collectionVariables.set('leaveId', jsonData.data.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"leaveType\": \"Casual\",\n  \"startDate\": \"2026-09-01\",\n  \"endDate\": \"2026-09-02\",\n  \"reason\": \"Will cancel this leave\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/leaves",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "leaves"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Cancel-2: Cancel Leave",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Leave cancelled successfully', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/leaves/{{leaveId}}/cancel",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "leaves", "{{leaveId}}", "cancel"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Cancel-3: Verify Balance Restored",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/employees/me/balance?leaveType=Casual",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "employees", "me", "balance"],
+              "query": [
+                { "key": "leaveType", "value": "Casual" }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

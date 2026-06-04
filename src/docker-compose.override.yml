@@ -1,0 +1,35 @@
+version: '3.8'
+
+# Development overrides - use for local development
+services:
+  consul:
+    volumes:
+      - consul-data:/consul/data
+
+  rabbitmq:
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+
+  auth-service:
+    volumes:
+      - ./Services/AuthService/logs:/app/logs
+
+  employee-service:
+    volumes:
+      - ./Services/EmployeeService/logs:/app/logs
+
+  leave-service:
+    volumes:
+      - ./Services/LeaveService/logs:/app/logs
+
+  notification-service:
+    volumes:
+      - ./Services/NotificationService/logs:/app/logs
+
+  api-gateway:
+    volumes:
+      - ./Gateway/ApiGateway/logs:/app/logs
+
+volumes:
+  consul-data:
+  rabbitmq-data:

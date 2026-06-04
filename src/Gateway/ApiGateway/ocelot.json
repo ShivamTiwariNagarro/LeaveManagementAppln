@@ -1,0 +1,362 @@
+{
+  "_comment": "Ocelot Static Configuration - Uses hardcoded DownstreamHostAndPorts",
+  "_usage": "This config is loaded for local development. Docker uses ocelot.docker.json with container hostnames.",
+  
+  "Routes": [
+    {
+      "_comment": "Route: POST /api/auth/login - User login (no auth required)",
+      "DownstreamPathTemplate": "/api/auth/login",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5001
+        }
+      ],
+      "UpstreamPathTemplate": "/api/auth/login",
+      "UpstreamHttpMethod": [ "Post" ]
+    },
+    {
+      "_comment": "Route: GET /api/auth/validate - Validate JWT token",
+      "DownstreamPathTemplate": "/api/auth/validate",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5001
+        }
+      ],
+      "UpstreamPathTemplate": "/api/auth/validate",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer"
+      }
+    },
+    {
+      "_comment": "Route: GET /api/employees/{employeeId} - Get employee details",
+      "DownstreamPathTemplate": "/api/employees/{employeeId}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5002
+        }
+      ],
+      "UpstreamPathTemplate": "/api/employees/{employeeId}",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer"
+      }
+    },
+    {
+      "_comment": "Route: GET /api/employees/{employeeId}/balance - Get leave balance",
+      "DownstreamPathTemplate": "/api/employees/{employeeId}/balance",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5002
+        }
+      ],
+      "UpstreamPathTemplate": "/api/employees/{employeeId}/balance",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer"
+      }
+    },
+    {
+      "_comment": "Route: PUT /api/employees/{employeeId}/balance/{leaveType} - Update balance (internal)",
+      "DownstreamPathTemplate": "/api/employees/{employeeId}/balance/{leaveType}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5002
+        }
+      ],
+      "UpstreamPathTemplate": "/api/employees/{employeeId}/balance/{leaveType}",
+      "UpstreamHttpMethod": [ "Put" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer"
+      }
+    },
+    {
+      "_comment": "Route: GET /api/employees/team/{managerId} - Get team members",
+      "DownstreamPathTemplate": "/api/employees/team/{managerId}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5002
+        }
+      ],
+      "UpstreamPathTemplate": "/api/employees/team/{managerId}",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer"
+      },
+      "RouteClaimsRequirement": {
+        "user_role": "Manager"
+      }
+    },
+    {
+      "_comment": "Route: POST /api/leaves - Apply for leave",
+      "DownstreamPathTemplate": "/api/leaves",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5003
+        }
+      ],
+      "UpstreamPathTemplate": "/api/leaves",
+      "UpstreamHttpMethod": [ "Post" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer"
+      }
+    },
+    {
+      "_comment": "Route: GET /api/leaves/{id} - Get leave request by ID",
+      "DownstreamPathTemplate": "/api/leaves/{id}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5003
+        }
+      ],
+      "UpstreamPathTemplate": "/api/leaves/{id}",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer"
+      }
+    },
+    {
+      "_comment": "Route: GET /api/leaves/my - Get current user's leave requests",
+      "DownstreamPathTemplate": "/api/leaves/my",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5003
+        }
+      ],
+      "UpstreamPathTemplate": "/api/leaves/my",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer"
+      }
+    },
+    {
+      "_comment": "Route: POST /api/leaves/{id}/cancel - Cancel leave request (Employee)",
+      "DownstreamPathTemplate": "/api/leaves/{id}/cancel",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5003
+        }
+      ],
+      "UpstreamPathTemplate": "/api/leaves/{id}/cancel",
+      "UpstreamHttpMethod": [ "Post" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer"
+      }
+    },
+    {
+      "_comment": "Route: GET /api/leaves/pending - Manager view pending requests",
+      "DownstreamPathTemplate": "/api/leaves/pending",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5003
+        }
+      ],
+      "UpstreamPathTemplate": "/api/leaves/pending",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer"
+      },
+      "RouteClaimsRequirement": {
+        "user_role": "Manager"
+      }
+    },
+    {
+      "_comment": "Route: GET /api/leaves/team - Manager view all team requests",
+      "DownstreamPathTemplate": "/api/leaves/team",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5003
+        }
+      ],
+      "UpstreamPathTemplate": "/api/leaves/team",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer"
+      },
+      "RouteClaimsRequirement": {
+        "user_role": "Manager"
+      }
+    },
+    {
+      "_comment": "Route: POST /api/leaves/{id}/approve - Approve leave request",
+      "DownstreamPathTemplate": "/api/leaves/{id}/approve",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5003
+        }
+      ],
+      "UpstreamPathTemplate": "/api/leaves/{id}/approve",
+      "UpstreamHttpMethod": [ "Post" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer"
+      },
+      "RouteClaimsRequirement": {
+        "user_role": "Manager"
+      }
+    },
+    {
+      "_comment": "Route: POST /api/leaves/{id}/reject - Reject leave request",
+      "DownstreamPathTemplate": "/api/leaves/{id}/reject",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5003
+        }
+      ],
+      "UpstreamPathTemplate": "/api/leaves/{id}/reject",
+      "UpstreamHttpMethod": [ "Post" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer"
+      },
+      "RouteClaimsRequirement": {
+        "user_role": "Manager"
+      }
+    },
+    {
+      "_comment": "Route: GET /api/leaves/history - Employee's own leave history",
+      "DownstreamPathTemplate": "/api/leaves/history",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5003
+        }
+      ],
+      "UpstreamPathTemplate": "/api/leaves/history",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer"
+      }
+    },
+    {
+      "_comment": "Route: GET /api/leaves/history/{employeeId} - Manager view employee history",
+      "DownstreamPathTemplate": "/api/leaves/history/{employeeId}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5003
+        }
+      ],
+      "UpstreamPathTemplate": "/api/leaves/history/{employeeId}",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer"
+      },
+      "RouteClaimsRequirement": {
+        "user_role": "Manager"
+      }
+    }
+    ,
+    {
+      "_comment": "Route: GET /api/notifications - Get current user's notifications",
+      "DownstreamPathTemplate": "/api/notifications",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5004
+        }
+      ],
+      "UpstreamPathTemplate": "/api/notifications",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer"
+      }
+    },
+    {
+      "_comment": "Route: GET /api/notifications/unread - Get unread notifications",
+      "DownstreamPathTemplate": "/api/notifications/unread",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5004
+        }
+      ],
+      "UpstreamPathTemplate": "/api/notifications/unread",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer"
+      }
+    },
+    {
+      "_comment": "Route: POST /api/notifications/{notificationId}/read - Mark notification as read",
+      "DownstreamPathTemplate": "/api/notifications/{notificationId}/read",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5004
+        }
+      ],
+      "UpstreamPathTemplate": "/api/notifications/{notificationId}/read",
+      "UpstreamHttpMethod": [ "Post" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer"
+      }
+    },
+    {
+      "_comment": "Route: POST /api/notifications/read-all - Mark all notifications as read",
+      "DownstreamPathTemplate": "/api/notifications/read-all",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5004
+        }
+      ],
+      "UpstreamPathTemplate": "/api/notifications/read-all",
+      "UpstreamHttpMethod": [ "Post" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer"
+      }
+    },
+    {
+      "_comment": "Route: GET /api/notifications/{notificationId} - Get notification by ID",
+      "DownstreamPathTemplate": "/api/notifications/{notificationId}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5004
+        }
+      ],
+      "UpstreamPathTemplate": "/api/notifications/{notificationId}",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer"
+      }
+    }
+  ],
+  "GlobalConfiguration": {
+    "BaseUrl": "http://localhost:5000"
+  }
+}
